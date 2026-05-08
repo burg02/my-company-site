@@ -54,7 +54,7 @@ export default async function EditEventPage({
           speakers: (speakers || []).map((s) => ({
             name: s.name,
             position: s.position || '',
-            image: undefined,
+            image: null,
             existing_image: s.image_url || '',
           })),
         }}
