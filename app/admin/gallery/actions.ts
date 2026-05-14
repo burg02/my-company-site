@@ -4,14 +4,15 @@ import { createClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-const supabase = createClient(
+const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 const BUCKET = 'Gallery'
 
 async function uploadFile(file: File, folder: string): Promise<string | null> {
+  const supabase = getSupabase()
   if (!file || file.size === 0) return null
   const ext = file.name.split('.').pop()
   const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
@@ -22,6 +23,7 @@ async function uploadFile(file: File, folder: string): Promise<string | null> {
 }
 
 export async function createAlbum(formData: FormData) {
+  const supabase = getSupabase()
   const coverFile = formData.get('cover_image') as File
   const coverUrl = coverFile?.size > 0 ? await uploadFile(coverFile, 'covers') : null
 
@@ -39,7 +41,6 @@ export async function createAlbum(formData: FormData) {
 
   if (error || !album) throw new Error('Failed to create album: ' + error?.message)
 
-  // Upload multiple photos
   const photoCount = parseInt(formData.get('photo_count') as string || '0')
   for (let i = 0; i < photoCount; i++) {
     const photoFile = formData.get(`photos[${i}][file]`) as File
@@ -58,27 +59,14 @@ export async function createAlbum(formData: FormData) {
 }
 
 export async function deleteAlbum(albumId: string) {
-  // Get all photos to delete from storage
-  const { data: photos } = await supabase
-    .from('photos')
-    .select('image_url')
-    .eq('album_id', albumId)
-
-  if (photos) {
-    const paths = photos.map((p) => {
-      const parts = p.image_url.split('/')
-      return parts[parts.length - 1]
-    })
-    if (paths.length > 0) {
-      await supabase.storage.from(BUCKET).remove(paths)
-    }
-  }
-
+  const supabase = getSupabase()
+  await supabase.from('photos').delete().eq('album_id', albumId)
   await supabase.from('albums').delete().eq('id', albumId)
   revalidatePath('/admin/gallery')
 }
 
 export async function addPhotosToAlbum(albumId: string, formData: FormData) {
+  const supabase = getSupabase()
   const photoCount = parseInt(formData.get('photo_count') as string || '0')
   for (let i = 0; i < photoCount; i++) {
     const photoFile = formData.get(`photos[${i}][file]`) as File
@@ -96,12 +84,7 @@ export async function addPhotosToAlbum(albumId: string, formData: FormData) {
 }
 
 export async function deletePhoto(photoId: string, albumId: string) {
-  const { data: photo } = await supabase.from('photos').select('image_url').eq('id', photoId).single()
-  if (photo) {
-    const parts = photo.image_url.split('/')
-    const fileName = parts[parts.length - 1]
-    await supabase.storage.from(BUCKET).remove([fileName])
-  }
+  const supabase = getSupabase()
   await supabase.from('photos').delete().eq('id', photoId)
   revalidatePath(`/admin/gallery/${albumId}`)
 }

@@ -21,10 +21,12 @@ export default function AboutPage() {
       {/* HERO */}
       <section className="pt-16 min-h-[70vh] flex flex-col justify-end relative overflow-hidden bg-zinc-900">
         <div
-          className="absolute inset-0 opacity-[0.04]"
+          className="absolute inset-0 opacity-[0.60]"
           style={{
-            backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
-            backgroundSize: '80px 80px',
+             backgroundImage: "url('/images/press-conference-event-stockcake.jpg')", 
+              backgroundSize: 'cover',        // This stretches the image to fill the screen
+               backgroundPosition: 'center',  // This centers the image
+                backgroundRepeat: 'no-repeat'  // This stops the tiling/repeating
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/80 to-transparent" />
@@ -49,7 +51,7 @@ export default function AboutPage() {
         <div className="max-w-6xl mx-auto px-6 py-16">
           <div className="grid md:grid-cols-3 gap-px bg-zinc-200">
             {[
-              { value: '999999999+', label: 'Events Produced' },
+              { value: '5k+', label: 'Events Produced' },
               { value: '5,000+', label: 'Leaders Connected' },
               { value: '8+', label: 'Years of Impact' },
             ].map((stat) => (
@@ -84,7 +86,13 @@ export default function AboutPage() {
             <div className="relative">
               <div className="aspect-[4/5] bg-zinc-100 overflow-hidden">
                 <div className="w-full h-full bg-gradient-to-br from-zinc-200 to-zinc-300 flex items-center justify-center">
-                  <p className="text-zinc-400 text-xs tracking-widest uppercase">Mission Image</p>
+                  <div className="absolute inset-0 z-0 opacity-100" 
+                       style={{ backgroundImage: "url('/images/press-conference-scene-stockcake.jpg')", 
+                              backgroundSize: 'cover',        // This stretches the image to fill the screen
+                              backgroundPosition: 'center',  // This centers the image
+                              backgroundRepeat: 'no-repeat'  // This stops the tiling/repeating
+                                    }} 
+/>
                 </div>
               </div>
               {/* Decorative accent */}
@@ -104,7 +112,13 @@ export default function AboutPage() {
             <div className="relative order-2 md:order-1">
               <div className="aspect-[4/5] bg-zinc-100 overflow-hidden">
                 <div className="w-full h-full bg-gradient-to-br from-zinc-300 to-zinc-200 flex items-center justify-center">
-                  <p className="text-zinc-400 text-xs tracking-widest uppercase">Vision Image</p>
+                  <div className="absolute inset-0 z-0 opacity-100" 
+                       style={{ backgroundImage: "url('/images/istockphoto-1759436430-612x612.jpg')", 
+                              backgroundSize: 'cover',        // This stretches the image to fill the screen
+                              backgroundPosition: 'center',  // This centers the image
+                              backgroundRepeat: 'no-repeat'  // This stops the tiling/repeating
+                                    }} 
+                            />
                 </div>
               </div>
               <div className="absolute -top-6 -right-6 w-32 h-32 bg-zinc-100 -z-10" />

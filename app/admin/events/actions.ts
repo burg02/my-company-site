@@ -4,14 +4,15 @@ import { createClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-const supabase = createClient(
+const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 const BUCKET = 'event-assets'
 
 async function uploadFile(file: File, folder: string): Promise<string | null> {
+  const supabase = getSupabase()
   if (!file || file.size === 0) return null
   const ext = file.name.split('.').pop()
   const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
@@ -22,11 +23,10 @@ async function uploadFile(file: File, folder: string): Promise<string | null> {
 }
 
 export async function createEvent(formData: FormData) {
-  // --- Upload hero image ---
+  const supabase = getSupabase()
   const heroFile = formData.get('hero_image') as File
   const heroUrl = heroFile?.size > 0 ? await uploadFile(heroFile, 'heroes') : null
 
-  // --- Build slug from title ---
   const title = formData.get('title') as string
   const slug = title
     .toLowerCase()
@@ -35,7 +35,6 @@ export async function createEvent(formData: FormData) {
     .replace(/-+/g, '-')
     .trim() + '-' + Date.now()
 
-  // --- Insert event ---
   const { data: event, error: eventError } = await supabase
     .from('events')
     .insert({
@@ -52,21 +51,14 @@ export async function createEvent(formData: FormData) {
     .select()
     .single()
 
-  if (eventError || !event) {
-    console.error('Event insert error:', eventError)
-    throw new Error('Failed to create event: ' + eventError?.message)
-  }
+  if (eventError || !event) throw new Error('Failed to create event: ' + eventError?.message)
 
-  // --- Upload speaker images and insert speakers ---
   const speakerCount = parseInt(formData.get('speaker_count') as string || '0')
-
   for (let i = 0; i < speakerCount; i++) {
     const name = formData.get(`speakers[${i}][name]`) as string
     if (!name) continue
-
     const speakerFile = formData.get(`speakers[${i}][image]`) as File
     const speakerImageUrl = speakerFile?.size > 0 ? await uploadFile(speakerFile, 'speakers') : null
-
     await supabase.from('speakers').insert({
       event_id: event.id,
       name,
@@ -80,6 +72,7 @@ export async function createEvent(formData: FormData) {
 }
 
 export async function updateEvent(eventId: string, formData: FormData) {
+  const supabase = getSupabase()
   const heroFile = formData.get('hero_image') as File
   const existingHeroUrl = formData.get('existing_hero_url') as string
   const heroUrl = heroFile?.size > 0 ? await uploadFile(heroFile, 'heroes') : existingHeroUrl || null
@@ -102,7 +95,6 @@ export async function updateEvent(eventId: string, formData: FormData) {
 
   if (eventError) throw new Error('Failed to update event: ' + eventError.message)
 
-  // Delete old speakers and re-insert
   await supabase.from('speakers').delete().eq('event_id', eventId)
 
   const speakerCount = parseInt(formData.get('speaker_count') as string || '0')
@@ -114,7 +106,6 @@ export async function updateEvent(eventId: string, formData: FormData) {
     const speakerImageUrl = speakerFile?.size > 0
       ? await uploadFile(speakerFile, 'speakers')
       : existingSpeakerUrl || null
-
     await supabase.from('speakers').insert({
       event_id: eventId,
       name,

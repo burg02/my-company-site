@@ -3,20 +3,27 @@ import Link from 'next/link'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 export default async function AdminDashboardPage() {
-  const { data: events } = await supabase.from('events').select('id')
-  const { data: posts } = await supabase.from('posts').select('id')
-  const { data: gallery } = await supabase.from('gallery').select('id')
-  const { data: messages } = await supabase.from('messages').select('id').eq('is_read', false)
+  const [
+    { count: eventsCount },
+    { count: postsCount },
+    { count: albumsCount },
+    { count: unreadCount },
+  ] = await Promise.all([
+    supabase.from('events').select('*', { count: 'exact', head: true }),
+    supabase.from('posts').select('*', { count: 'exact', head: true }),
+    supabase.from('albums').select('*', { count: 'exact', head: true }),
+    supabase.from('messages').select('*', { count: 'exact', head: true }).eq('is_read', false),
+  ])
 
   const stats = [
-    { label: 'Events', value: events?.length ?? 0, href: '/admin/events', icon: '◈' },
-    { label: 'Blog Posts', value: posts?.length ?? 0, href: '/admin/blog', icon: '✦' },
-    { label: 'Gallery', value: gallery?.length ?? 0, href: '/admin/gallery', icon: '⬡' },
-    { label: 'Unread Messages', value: messages?.length ?? 0, href: '/admin/messages', icon: '✉' },
+    { label: 'Events', value: eventsCount ?? 0, href: '/admin/events', icon: '◈' },
+    { label: 'Blog Posts', value: postsCount ?? 0, href: '/admin/blog', icon: '✦' },
+    { label: 'Albums', value: albumsCount ?? 0, href: '/admin/gallery', icon: '⬡' },
+    { label: 'Unread Messages', value: unreadCount ?? 0, href: '/admin/messages', icon: '✉' },
   ]
 
   return (
@@ -52,8 +59,8 @@ export default async function AdminDashboardPage() {
           {[
             { label: 'Create New Event', href: '/admin/events/new', desc: 'Add an upcoming or past event' },
             { label: 'Write a Blog Post', href: '/admin/blog/new', desc: 'Publish a new article or update' },
-            { label: 'Upload to Gallery', href: '/admin/gallery', desc: 'Add photos to the gallery' },
-            { label: 'View Messages', href: '/admin/messages', desc: 'Read contact form submissions' },
+            { label: 'Create Photo Album', href: '/admin/gallery/new', desc: 'Add a new gallery album' },
+            { label: 'View Messages', href: '/admin/messages', desc: `${unreadCount ?? 0} unread message${unreadCount !== 1 ? 's' : ''}` },
           ].map((action) => (
             <Link
               key={action.href}

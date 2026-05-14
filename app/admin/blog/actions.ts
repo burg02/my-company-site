@@ -4,14 +4,15 @@ import { createClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-const supabase = createClient(
+const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 const BUCKET = 'blog-assets'
 
 async function uploadFile(file: File, folder: string): Promise<string | null> {
+  const supabase = getSupabase()
   if (!file || file.size === 0) return null
   const ext = file.name.split('.').pop()
   const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
@@ -22,6 +23,7 @@ async function uploadFile(file: File, folder: string): Promise<string | null> {
 }
 
 export async function createPost(formData: FormData) {
+  const supabase = getSupabase()
   const title = formData.get('title') as string
   const slug = title
     .toLowerCase()
@@ -50,6 +52,7 @@ export async function createPost(formData: FormData) {
 }
 
 export async function updatePost(postId: string, formData: FormData) {
+  const supabase = getSupabase()
   const coverFile = formData.get('cover_image') as File
   const existingCover = formData.get('existing_cover_url') as string
   const coverUrl = coverFile?.size > 0 ? await uploadFile(coverFile, 'covers') : existingCover || null
