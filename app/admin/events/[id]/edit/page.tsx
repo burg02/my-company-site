@@ -52,11 +52,11 @@ export default async function EditEventPage({
           accent_color: event.accent_color || '#18181b',
           existing_hero_url: event.hero_image || '',
           speakers: (speakers || []).map((s) => ({
-            name: s.name,
-            position: s.position || '',
-            image: '',
-            existing_image: s.image_url || '',
-          })),
+          name: s.name,
+          position: s.position || '',
+          image: null as any,
+          existing_image: s.image_url || '',
+  })),
         }}
       />
     </div>
