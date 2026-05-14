@@ -53,9 +53,11 @@ export async function createAlbum(formData: FormData) {
       caption: formData.get(`photos[${i}][caption]`) as string || '',
     })
   }
-
+  revalidatePath('/gallery')
+revalidatePath('/')
   revalidatePath('/admin/gallery')
   redirect('/admin/gallery')
+  
 }
 
 export async function deleteAlbum(albumId: string) {
@@ -63,6 +65,9 @@ export async function deleteAlbum(albumId: string) {
   await supabase.from('photos').delete().eq('album_id', albumId)
   await supabase.from('albums').delete().eq('id', albumId)
   revalidatePath('/admin/gallery')
+  revalidatePath('/gallery')
+revalidatePath('/')
+
 }
 
 export async function addPhotosToAlbum(albumId: string, formData: FormData) {
@@ -79,12 +84,17 @@ export async function addPhotosToAlbum(albumId: string, formData: FormData) {
       caption: formData.get(`photos[${i}][caption]`) as string || '',
     })
   }
+  revalidatePath('/gallery')
+revalidatePath('/')
   revalidatePath('/admin/gallery')
   redirect(`/admin/gallery/${albumId}`)
+  
 }
 
 export async function deletePhoto(photoId: string, albumId: string) {
   const supabase = getSupabase()
   await supabase.from('photos').delete().eq('id', photoId)
+  revalidatePath('/gallery')
+revalidatePath('/')
   revalidatePath(`/admin/gallery/${albumId}`)
 }

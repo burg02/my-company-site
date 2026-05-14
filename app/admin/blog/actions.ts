@@ -46,7 +46,8 @@ export async function createPost(formData: FormData) {
   })
 
   if (error) throw new Error('Failed to create post: ' + error.message)
-
+    revalidatePath('/blog')
+revalidatePath('/')
   revalidatePath('/admin/blog')
   redirect('/admin/blog')
 }

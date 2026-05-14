@@ -66,7 +66,8 @@ export async function createEvent(formData: FormData) {
       image_url: speakerImageUrl,
     })
   }
-
+  revalidatePath('/events')
+  revalidatePath('/')
   revalidatePath('/admin/events')
   redirect('/admin/events')
 }
