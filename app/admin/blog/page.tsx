@@ -1,19 +1,37 @@
-import { createClient } from '@supabase/supabase-js'
+'use client'
+
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { Trash2 } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+export default function AdminBlogPage() {
+  const [posts, setPosts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
-export default async function AdminBlogPage() {
-  const { data: posts } = await supabase
-    .from('posts')
-    .select('*')
-    .order('created_at', { ascending: false })
+  const loadPosts = async () => {
+    setLoading(true)
+    const { data } = await supabase
+      .from('posts')
+      .select('*')
+      .order('created_at', { ascending: false })
+    setPosts(data ?? [])
+    setLoading(false)
+  }
 
-  const published = posts?.filter((p) => p.published) ?? []
-  const drafts = posts?.filter((p) => !p.published) ?? []
+  useEffect(() => { loadPosts() }, [])
+
+  const handleDelete = async (postId: string) => {
+    if (!confirm('Delete this post? This cannot be undone.')) return
+    setDeleting(postId)
+    await supabase.from('posts').delete().eq('id', postId)
+    setPosts((prev) => prev.filter((p) => p.id !== postId))
+    setDeleting(null)
+  }
+
+  const published = posts.filter((p) => p.published)
+  const drafts = posts.filter((p) => !p.published)
 
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -45,12 +63,26 @@ export default async function AdminBlogPage() {
       </div>
       <div className="flex items-center gap-4 shrink-0 ml-4">
         {post.published && (
-          <Link href={`/blog/${post.slug}`} target="_blank" className="text-xs text-zinc-300 hover:text-zinc-600 transition-colors" title="View public page">↗</Link>
+          <Link href={`/blog/${post.slug}`} target="_blank" className="text-xs text-zinc-300 hover:text-zinc-600 transition-colors">
+            ↗
+          </Link>
         )}
-        <Link href={`/admin/blog/${post.id}/edit`} className="text-xs text-zinc-400 hover:text-zinc-900 transition-colors">Edit</Link>
+        <Link href={`/admin/blog/${post.id}/edit`} className="text-xs text-zinc-400 hover:text-zinc-900 transition-colors">
+          Edit
+        </Link>
+        <button
+          onClick={() => handleDelete(post.id)}
+          disabled={deleting === post.id}
+          className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition-colors disabled:opacity-50"
+        >
+          <Trash2 size={11} />
+          {deleting === post.id ? 'Deleting...' : 'Delete'}
+        </button>
       </div>
     </div>
   )
+
+  if (loading) return <div className="text-xs text-zinc-400 py-8">Loading...</div>
 
   return (
     <div className="max-w-5xl space-y-8">
@@ -65,7 +97,7 @@ export default async function AdminBlogPage() {
         </Link>
       </div>
 
-      {(!posts || posts.length === 0) && (
+      {posts.length === 0 && (
         <div className="bg-white border border-dashed border-zinc-200 p-16 text-center">
           <p className="text-4xl mb-4">✦</p>
           <p className="text-sm font-medium text-zinc-900 mb-1">No posts yet</p>
@@ -79,14 +111,18 @@ export default async function AdminBlogPage() {
       {published.length > 0 && (
         <div className="space-y-3">
           <p className="text-[10px] tracking-[0.3em] uppercase text-zinc-400">Published</p>
-          <div className="space-y-px">{published.map((post) => <PostRow key={post.id} post={post} />)}</div>
+          <div className="space-y-px">
+            {published.map((post) => <PostRow key={post.id} post={post} />)}
+          </div>
         </div>
       )}
 
       {drafts.length > 0 && (
         <div className="space-y-3">
           <p className="text-[10px] tracking-[0.3em] uppercase text-zinc-400">Drafts</p>
-          <div className="space-y-px">{drafts.map((post) => <PostRow key={post.id} post={post} />)}</div>
+          <div className="space-y-px">
+            {drafts.map((post) => <PostRow key={post.id} post={post} />)}
+          </div>
         </div>
       )}
     </div>
