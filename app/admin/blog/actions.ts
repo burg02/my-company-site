@@ -46,9 +46,11 @@ export async function createPost(formData: FormData) {
   })
 
   if (error) throw new Error('Failed to create post: ' + error.message)
-    revalidatePath('/blog')
-revalidatePath('/')
+
   revalidatePath('/admin/blog')
+  revalidatePath('/blog')
+  revalidatePath(`/blog/${slug}`)
+  revalidatePath('/')
   redirect('/admin/blog')
 }
 
@@ -57,6 +59,8 @@ export async function updatePost(postId: string, formData: FormData) {
   const coverFile = formData.get('cover_image') as File
   const existingCover = formData.get('existing_cover_url') as string
   const coverUrl = coverFile?.size > 0 ? await uploadFile(coverFile, 'covers') : existingCover || null
+
+  const { data: existing } = await supabase.from('posts').select('slug').eq('id', postId).single()
 
   const { error } = await supabase.from('posts').update({
     title: formData.get('title') as string,
@@ -70,5 +74,8 @@ export async function updatePost(postId: string, formData: FormData) {
   if (error) throw new Error('Failed to update post: ' + error.message)
 
   revalidatePath('/admin/blog')
+  revalidatePath('/blog')
+  if (existing?.slug) revalidatePath(`/blog/${existing.slug}`)
+  revalidatePath('/')
   redirect('/admin/blog')
 }

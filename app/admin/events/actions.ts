@@ -66,9 +66,11 @@ export async function createEvent(formData: FormData) {
       image_url: speakerImageUrl,
     })
   }
-  revalidatePath('/events')
-  revalidatePath('/')
+
   revalidatePath('/admin/events')
+  revalidatePath('/events')
+  revalidatePath(`/events/${slug}`)
+  revalidatePath('/')
   redirect('/admin/events')
 }
 
@@ -79,6 +81,8 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const heroUrl = heroFile?.size > 0 ? await uploadFile(heroFile, 'heroes') : existingHeroUrl || null
 
   const title = formData.get('title') as string
+
+  const { data: existing } = await supabase.from('events').select('slug').eq('id', eventId).single()
 
   const { error: eventError } = await supabase
     .from('events')
@@ -116,5 +120,8 @@ export async function updateEvent(eventId: string, formData: FormData) {
   }
 
   revalidatePath('/admin/events')
+  revalidatePath('/events')
+  if (existing?.slug) revalidatePath(`/events/${existing.slug}`)
+  revalidatePath('/')
   redirect('/admin/events')
 }
