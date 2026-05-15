@@ -31,8 +31,10 @@ export default async function HomePage() {
       {/* HERO */}
       <section className="pt-16 min-h-screen flex flex-col justify-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: `linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)`,
-          backgroundSize: '60px 60px',
+          backgroundImage: "url('/images/press-conference-event-stockcake.jpg')", 
+              backgroundSize: 'cover',        // This stretches the image to fill the screen
+               backgroundPosition: 'center',  // This centers the image
+                backgroundRepeat: 'no-repeat'  // This stops the tiling/repeating
         }} />
         <div className="max-w-6xl mx-auto px-6 py-20 md:py-32 relative">
           <div className="max-w-3xl">
