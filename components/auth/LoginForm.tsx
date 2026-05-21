@@ -28,8 +28,8 @@ export default function LoginForm() {
       return
     }
 
-    router.push('/admin')
-    router.refresh()
+router.refresh()
+router.push('/admin')
   }
 
   return (
