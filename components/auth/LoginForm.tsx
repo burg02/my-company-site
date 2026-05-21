@@ -28,7 +28,7 @@ export default function LoginForm() {
       return
     }
 
-    router.push(next)
+    router.push('/admin')
     router.refresh()
   }
 
