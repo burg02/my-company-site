@@ -29,7 +29,7 @@ export default function LoginForm() {
     }
 
 router.refresh()
-router.push('/admin')
+window.location.href = '/admin'
   }
 
   return (
