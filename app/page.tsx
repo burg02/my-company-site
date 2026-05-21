@@ -30,7 +30,7 @@ export default async function HomePage() {
 
       {/* HERO */}
       <section className="pt-16 min-h-screen flex flex-col justify-center relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.0.10]" style={{
+        <div className="absolute inset-0 opacity-[0.0.30]" style={{
           backgroundImage: "url('/images/press-conference-event-stockcake.jpg')", 
               backgroundSize: 'cover',        // This stretches the image to fill the screen
                backgroundPosition: 'center',  // This centers the image
